@@ -20,11 +20,13 @@
 #include "Poco/Net/HTTPRequest.h"
 #include "Poco/Net/HTTPResponse.h"
 #include "Poco/Net/NetException.h"
+#include "Poco/Exception.h"
 #include "Poco/NumberFormatter.h"
 
 
 using Poco::NumberFormatter;
 using Poco::IllegalStateException;
+using Poco::InvalidArgumentException;
 
 
 namespace Poco {
@@ -114,6 +116,24 @@ void HTTPSClientSession::abort()
 {
 	SecureStreamSocket sss(socket());
 	sss.abort();
+}
+
+
+StreamSocket HTTPSClientSession::detachSocket()
+{
+	// HTTPSession implementation creates newSocket as StreamSocket, but we need SecureStreamSocket in HTTPSClientSession
+	Poco::Net::SecureStreamSocket *secureSocketPtr = dynamic_cast<Poco::Net::SecureStreamSocket *>(&socket());
+	if (secureSocketPtr)
+	{
+		Poco::Net::SecureStreamSocket newSocket(secureSocketPtr->context());
+		StreamSocket oldSocket(socket());
+		attachSocket(newSocket);
+		return oldSocket;
+	}
+	else
+	{
+		throw InvalidArgumentException("Socket is not SecureStreamSocket");
+	}
 }
 
 

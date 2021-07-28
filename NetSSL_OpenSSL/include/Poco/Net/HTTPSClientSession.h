@@ -144,6 +144,9 @@ public:
 	// HTTPSession
 	void abort();
 
+	// HTTPSession
+	StreamSocket detachSocket() override;
+
 protected:
 	void connect(const SocketAddress& address);
 	std::string proxyRequestPrefix() const;
